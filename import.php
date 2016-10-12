@@ -1,4 +1,5 @@
 <?php
+ini_set('memory_limit','512M');
 
 $redis = new Redis();
 $redis->connect('10.11.12.13', 6379);
