@@ -4,12 +4,22 @@ set_time_limit(0);
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
+chdir(__DIR__);
+$baseName = "redis-dump";
+
 $start = time();
-$dir = __DIR__ . "/redis-dump-" . $start;
+
+if (file_exists("$baseName.tar.gz")) {
+    die("File $baseName.tar.gz already exists !\n");
+}
+$dir = __DIR__ . "/$baseName";
+if (file_exists($dir)) {
+    die("Error: directory already exists: " . $dir . PHP_EOL);
+}
 mkdir($dir);
 
 $redis = new Redis();
-$redis->connect('localhost', 6379);
+$redis->connect('172.17.0.2', 6379);
 $keys = $redis->keys('PHPREDIS_SESSION:*');
 $count = count($keys);
 echo "$count keys\n";
@@ -37,6 +47,10 @@ if (!empty($result)) {
     $dump = json_encode($result, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     file_put_contents($dir . '/part_' . $fileCount++ . '.json', $dump);
 }
+
+exec("tar -czf $baseName.tar.gz $baseName");
+exec("rm -r '$dir'");
+echo "Complete. Result file: " . __DIR__ ."/" . $baseName . ".tar.gz\n";
 
 $duration = time() - $start;
 echo "Elapsed " . (int)($duration / 60) . " minutes " . ($duration % 60) . " seconds\n";

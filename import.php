@@ -4,15 +4,29 @@ set_time_limit(0);
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
+chdir(__DIR__);
+$baseName = "redis-dump";
+
+$archiveFile = "$baseName.tar.gz";
+$dir = __DIR__ . "/$baseName";
+
 $start = time();
-$dir = __DIR__ . "/redis-dump";
-if (!file_exists($dir)) {
-    die("Directory with files not found: " . $dir);
+
+if (!file_exists($archiveFile)) {
+    die("Error: file $baseName.tar.gz not found !");
 }
-echo "Directory " . $dir . PHP_EOL;
+if (file_exists($dir)) {
+    die("Error: directory already exists: " . $dir);
+}
+exec("tar -xzf " . $archiveFile);
+echo "Unpack archive $archiveFile\n";
+if (!file_exists($dir)) {
+    die("Error: after unpack archive directory with files not found: " . $dir);
+}
+echo "Start process files in directory " . $dir . PHP_EOL;
 
 $redis = new Redis();
-$redis->connect('localhost', 6379);
+$redis->connect('172.17.0.2', 6379);
 
 $iterator = new \DirectoryIterator($dir);
 foreach ($iterator as $fileinfo) {
@@ -34,6 +48,8 @@ foreach ($iterator as $fileinfo) {
     }
     echo "Finish process file " . $fileinfo->getFilename() . "\n";
 }
+
+exec("rm -r '$dir'");
 
 $duration = time() - $start;
 echo "Elapsed " . (int)($duration / 60) . " minutes " . ($duration % 60) . " seconds\n";
