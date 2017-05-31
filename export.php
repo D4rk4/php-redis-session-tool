@@ -9,7 +9,7 @@ $dir = __DIR__ . "/redis-dump-" . $start;
 mkdir($dir);
 
 $redis = new Redis();
-$redis->connect('libertex.dev.fxclub.org', 6379);
+$redis->connect('localhost', 6379);
 $keys = $redis->keys('PHPREDIS_SESSION:*');
 $count = count($keys);
 echo "$count keys\n";
